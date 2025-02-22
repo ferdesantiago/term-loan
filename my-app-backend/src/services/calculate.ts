@@ -34,17 +34,26 @@ export async function calculateAmortizationSchedule(data: ICalculate): Promise<I
         const response = [];
         for (let i=0; i<data.amortization; i++) {
             totalPrincipalLoanPayment += monthlyPrincipalPayment;
-            lastDate = lastDate.add(1, 'M').endOf('month');
             let item;
-            if (i < data.terms) {
+            if (i === 0) {
                 item = {
-                    date: lastDate.format('YYYY-MM-DD'),
+                    date: moment().format('YYYY-MM-DD'),
+                    startingBalance: roundNumber(loanBalance),
+                    interestPayment: 0,
+                    principalPayment: 0,
+                    endingBalance: 0
+                };
+                loanBalance -= monthlyPrincipalPayment;
+            } else if (i < data.terms) {
+                item = {
+                    date: lastDate.endOf('month').format('YYYY-MM-DD'),
                     startingBalance: roundNumber(loanBalance),
                     interestPayment: roundNumber(calculateDailyInterestAccrued(data.loanAmount, totalPrincipalLoanPayment, dailyInterestRate)),
                     principalPayment: roundNumber(monthlyPrincipalPayment),
                     endingBalance: roundNumber(loanBalance - monthlyPrincipalPayment)
                 };
                 loanBalance -= monthlyPrincipalPayment;
+                lastDate = lastDate.add(1, 'M');
             } else if (i === data.terms) {
                 item = {
                     date: lastDate.format('YYYY-MM-DD'),

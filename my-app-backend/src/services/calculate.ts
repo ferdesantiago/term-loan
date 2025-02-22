@@ -32,28 +32,38 @@ export async function calculateAmortizationSchedule(data: ICalculate): Promise<I
         let lastDate = moment();
 
         const response = [];
-        for (let i=0; i<data.terms; i++) {
+        for (let i=0; i<data.amortization; i++) {
             totalPrincipalLoanPayment += monthlyPrincipalPayment;
             lastDate = lastDate.add(1, 'M').endOf('month');
-            let item = {
-                date: lastDate.format('YYYY-MM-DD'),
-                startingBalance: roundNumber(loanBalance),
-                interestPayment: roundNumber(calculateDailyInterestAccrued(data.loanAmount, totalPrincipalLoanPayment, dailyInterestRate)),
-                principalPayment: roundNumber(monthlyPrincipalPayment),
-                endingBalance: roundNumber(loanBalance - monthlyPrincipalPayment)
-            };
-            loanBalance -= monthlyPrincipalPayment;
+            let item;
+            if (i < data.terms) {
+                item = {
+                    date: lastDate.format('YYYY-MM-DD'),
+                    startingBalance: roundNumber(loanBalance),
+                    interestPayment: roundNumber(calculateDailyInterestAccrued(data.loanAmount, totalPrincipalLoanPayment, dailyInterestRate)),
+                    principalPayment: roundNumber(monthlyPrincipalPayment),
+                    endingBalance: roundNumber(loanBalance - monthlyPrincipalPayment)
+                };
+                loanBalance -= monthlyPrincipalPayment;
+            } else if (i === data.terms) {
+                item = {
+                    date: lastDate.format('YYYY-MM-DD'),
+                    startingBalance: roundNumber(loanBalance),
+                    interestPayment: roundNumber(calculateDailyInterestAccrued(data.loanAmount, totalPrincipalLoanPayment, dailyInterestRate)),
+                    principalPayment: roundNumber(loanBalance),
+                    endingBalance: 0
+                };
+            } else {
+                item = {
+                    date: lastDate.format('YYYY-MM-DD'),
+                    startingBalance: 0,
+                    interestPayment: 0,
+                    principalPayment: 0,
+                    endingBalance: 0
+                };
+            }
             response.push(item);
         }
-
-        totalPrincipalLoanPayment += monthlyPrincipalPayment;
-        response.push({
-            date: lastDate.format('YYYY-MM-DD'),
-            startingBalance: roundNumber(loanBalance),
-            interestPayment: roundNumber(calculateDailyInterestAccrued(data.loanAmount, totalPrincipalLoanPayment, dailyInterestRate)),
-            principalPayment: roundNumber(loanBalance),
-            endingBalance: 0
-        });
         return response;
     } catch (error) {
         throw new Error(`Unexpected Error: ${error}`);

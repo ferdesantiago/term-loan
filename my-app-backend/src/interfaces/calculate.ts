@@ -25,7 +25,8 @@ export interface ICalculate {
     loanAmount: number,
     amortization: number,
     terms: number,
-    marginAbovePrime: number
+    marginAbovePrime: number,
+    startDate: string
 }
 
 export interface ICalculateResponse {

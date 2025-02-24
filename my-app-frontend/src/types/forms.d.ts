@@ -14,7 +14,7 @@ declare global {
   }
 
   interface InputTextProps extends BaseInputProps {
-    type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
+    type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'date';
     placeholder?: string;
     maxLength?: number;
     autoComplete?: string;

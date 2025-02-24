@@ -7,7 +7,8 @@ const Home: React.FC = () => {
         loanAmount: '',
         amortization: '',
         terms: '',
-        marginAbovePrime: ''
+        marginAbovePrime: '',
+        startDate: ''
     });
 
     const [errors, setErrors] = useState({
@@ -59,7 +60,8 @@ const Home: React.FC = () => {
                         loanAmount: parseFloat(formData.loanAmount),
                         amortization: parseFloat(formData.amortization),
                         terms: parseFloat(formData.terms),
-                        marginAbovePrime: parseFloat(formData.marginAbovePrime)
+                        marginAbovePrime: parseFloat(formData.marginAbovePrime),
+                        startDate: formData.startDate
                     })
                 });
     
@@ -115,8 +117,8 @@ const Home: React.FC = () => {
                                 message: "Amortization period is required"
                             },
                             min: {
-                                value: 1,
-                                message: "Period must be greater than 0"
+                                value: formData.terms,
+                                message: "Period must be greater than terms"
                             }
                         }}
                     />
@@ -165,6 +167,23 @@ const Home: React.FC = () => {
                             min: {
                                 value: 0,
                                 message: "Margin rate must be 0 or greater"
+                            }
+                        }}
+                    />
+
+                    <InputText
+                        label="Initial date"
+                        name="startDate"
+                        value={formData.startDate}
+                        onChange={handleInputChange('startDate')}
+                        onError={handleError('startDate')}
+                        type="date"
+                        placeholder="Enter a date"
+                        required
+                        validation={{
+                            required: {
+                                value: true,
+                                message: "a Date is required"
                             }
                         }}
                     />

@@ -2,10 +2,12 @@ import axios from 'axios';
 import moment from 'moment';
 import { ICalculate, ICalculateResponse, IFredResponse } from '../interfaces/calculate';
 
-async function getPrimeInterestRate(substractDays: number): Promise<number> {
+const API_KEY = '5eefe51556ce98dfb2cf6f70b24afcbf';
+
+async function getPrimeInterestRate(): Promise<number> {
     try {
-        const actualDate = moment().subtract(substractDays, 'days').format('YYYY-MM-DD');
-        const response = await axios.get(`https://api.stlouisfed.org/fred/series/observations?series_id=DPRIME&file_type=json&api_key=5eefe51556ce98dfb2cf6f70b24afcbf&observation_start=${actualDate}&observation_end=9999-12-31`);
+        const url = `https://api.stlouisfed.org/fred/series/observations?series_id=DPRIME&file_type=json&api_key=${API_KEY}&sort_order=desc&limit=1`;
+        const response = await axios.get(url);
         const fred = response.data as IFredResponse;
         return +fred.observations[fred.observations.length - 1]?.value;
     } catch (error) {
@@ -24,12 +26,12 @@ function calculateDailyInterestAccrued(loanAmount: number, totalPrincipalLoanPay
 
 export async function calculateAmortizationSchedule(data: ICalculate): Promise<ICalculateResponse[]> {
     try {
-        const primeInterestRate = await getPrimeInterestRate(3);
-        const dailyInterestRate = (primeInterestRate + data.marginAbovePrime) / 360;
+        const primeInterestRate = (await getPrimeInterestRate()) / 100;
+        const dailyInterestRate = (primeInterestRate + (data.marginAbovePrime / 100)) / 360;
         const monthlyPrincipalPayment = (data.loanAmount / data.amortization);
         let totalPrincipalLoanPayment = 0;
         let loanBalance = data.loanAmount;
-        let lastDate = moment();
+        let lastDate = moment(data.startDate);
 
         const response = [];
         for (let i=0; i<data.amortization; i++) {
@@ -37,18 +39,17 @@ export async function calculateAmortizationSchedule(data: ICalculate): Promise<I
             let item;
             if (i === 0) {
                 item = {
-                    date: moment().format('YYYY-MM-DD'),
+                    date: lastDate.format('YYYY-MM-DD'),
                     startingBalance: roundNumber(loanBalance),
                     interestPayment: 0,
                     principalPayment: 0,
                     endingBalance: 0
                 };
-                loanBalance -= monthlyPrincipalPayment;
             } else if (i < data.terms) {
                 item = {
                     date: lastDate.endOf('month').format('YYYY-MM-DD'),
                     startingBalance: roundNumber(loanBalance),
-                    interestPayment: roundNumber(calculateDailyInterestAccrued(data.loanAmount, totalPrincipalLoanPayment, dailyInterestRate)),
+                    interestPayment: roundNumber(calculateDailyInterestAccrued(data.loanAmount, totalPrincipalLoanPayment, (dailyInterestRate * lastDate.daysInMonth()))),
                     principalPayment: roundNumber(monthlyPrincipalPayment),
                     endingBalance: roundNumber(loanBalance - monthlyPrincipalPayment)
                 };

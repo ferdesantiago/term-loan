@@ -13,14 +13,6 @@ const AmortizationTable: React.FC<AmortizationTableProps> = ({ schedule }) => {
         }).format(amount);
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
-
     return (
         <div className="overflow-x-auto bg-white rounded-lg shadow">
             <table className="min-w-full divide-y divide-gray-200">
@@ -49,7 +41,7 @@ const AmortizationTable: React.FC<AmortizationTableProps> = ({ schedule }) => {
                         schedule.data.map((payment, index) => (
                             <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {formatDate(payment.date)}
+                                    {payment.date}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {formatCurrency(payment.startingBalance)}
